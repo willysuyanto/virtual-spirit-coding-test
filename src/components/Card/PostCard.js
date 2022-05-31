@@ -75,5 +75,6 @@ const styles = StyleSheet.create({
   likeText: {
     textAlign: 'center',
     fontSize: 16,
+    color: '#111111',
   },
 });
