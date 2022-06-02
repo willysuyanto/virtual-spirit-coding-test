@@ -1,115 +1,70 @@
 import React from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  useColorScheme,
-  View,
-} from 'react-native';
-import {Button} from 'react-native-paper';
-import {useDispatch, useSelector} from 'react-redux';
-import PostCard from './src/components/Card/PostCard';
-import {
-  likeById,
-  dislikeById,
-  likeAll,
-  dislikeAll,
-  resetAllCount,
-} from './src/redux/slices/PostSlice';
+import {useSelector} from 'react-redux';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-  const post = useSelector(state => state.post);
-  const dispatch = useDispatch();
+import HomeScreen from './src/screens/HomeScreen';
+import LoginScreen from './src/screens/LoginScreen';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import MainMenu from './src/screens/MainMenu';
+import AddPostScreen from './src/screens/AddPostScreen';
 
-  const onLikeAll = () => {
-    dispatch(likeAll());
-  };
+import McIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Font from './src/utils/FontSize';
 
-  const onResetAll = () => {
-    dispatch(resetAllCount());
-  };
+const Stack = createNativeStackNavigator();
+const MenuStack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
-  const onDislikeAll = () => {
-    dispatch(dislikeAll());
-  };
-
-  const likeItem = value => {
-    dispatch(likeById(value));
-  };
-
-  const dislikeItem = value => {
-    dispatch(dislikeById(value));
-  };
-
+function MenuStackScreen() {
   return (
-    <SafeAreaView>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView>
-        <View style={styles.mainContainer}>
-          <View style={styles.headers}>
-            <Button
-              icon={'thumb-up-outline'}
-              mode="contained"
-              color="#2b72c4"
-              style={styles.buttonStyle}
-              uppercase={false}
-              onPress={onLikeAll}>
-              Like All
-            </Button>
-            <Button
-              icon={'cached'}
-              mode="contained"
-              color="#ffffff"
-              style={styles.buttonStyle}
-              onPress={onResetAll}
-              uppercase={false}>
-              Reset All
-            </Button>
-            <Button
-              icon={'thumb-down-outline'}
-              mode="contained"
-              color="#db2c2c"
-              style={styles.buttonStyle}
-              onPress={onDislikeAll}
-              uppercase={false}>
-              Dislike All
-            </Button>
-          </View>
-          <View style={styles.contents}>
-            {post.data.map((item, index) => (
-              <PostCard
-                key={index}
-                item={item}
-                index={index}
-                onLikePress={likeItem}
-                onDislikePress={dislikeItem}
-              />
-            ))}
-          </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <MenuStack.Navigator screenOptions={{headerShown: false}}>
+      <MenuStack.Screen name="MainMenu" component={MainMenu} />
+      <MenuStack.Screen name="NewPost" component={AddPostScreen} />
+    </MenuStack.Navigator>
   );
 }
 
-const styles = StyleSheet.create({
-  mainContainer: {
-    backgroundColor: '#f4f4f4',
-    display: 'flex',
-    flex: 1,
-    padding: 10,
-  },
-  headers: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  contents: {
-    marginVertical: 10,
-  },
-  buttonStyle: {},
-});
+function App() {
+  const auth = useSelector(state => state.auth);
+  return (
+    <SafeAreaProvider>
+      <NavigationContainer>
+        {auth.token === '' ? (
+          <Stack.Navigator>
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{headerShown: false}}
+            />
+          </Stack.Navigator>
+        ) : (
+          <Tab.Navigator
+            screenOptions={({route}) => ({
+              tabBarIcon: ({focused, color, size}) => {
+                let iconName;
+
+                if (route.name === 'Home') {
+                  iconName = focused ? 'home' : 'home-outline';
+                } else if (route.name === 'Main Menu') {
+                  iconName = focused ? 'menu' : 'menu';
+                }
+
+                // You can return any component that you like here!
+                return <McIcon name={iconName} size={size} color={color} />;
+              },
+              tabBarLabelStyle: {
+                fontSize: Font.md,
+              },
+            })}>
+            <Tab.Screen name="Home" component={HomeScreen} />
+            <Tab.Screen name="Main Menu" component={MenuStackScreen} />
+          </Tab.Navigator>
+        )}
+      </NavigationContainer>
+    </SafeAreaProvider>
+  );
+}
 
 export default App;

@@ -4,8 +4,10 @@ import {combineReducers} from 'redux';
 import {persistReducer} from 'redux-persist';
 import thunk from 'redux-thunk';
 import PostReducer from './slices/PostSlice';
+import AuthReducer from './slices/AuthSlice';
 
 const reducers = combineReducers({
+  auth: AuthReducer,
   post: PostReducer,
 });
 
